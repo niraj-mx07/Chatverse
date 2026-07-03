@@ -1,1 +1,1 @@
-# TODO: implement LLM client initialization (OpenAI / Google)
+# TODO: implement LLM client initialization (OpenAI / Google) , soon ... (imortal)
