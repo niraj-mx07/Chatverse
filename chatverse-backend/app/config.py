@@ -1,27 +1,15 @@
 from pydantic_settings import BaseSettings
-from typing import Optional
-
 
 class Settings(BaseSettings):
-    """Application settings loaded from .env file."""
 
-    # LLM API keys (use one or both)
-    OPENAI_API_KEY: Optional[str] = None
-    GOOGLE_API_KEY: Optional[str] = None
+    openai_api_key: str = ""
+    chroma_persist_dir: str ="./.chroma_db"
+    github_token: str = ""
+    gmail_credentials_path: str = "./credentials.json"
+    cors_origins: str = "http://localhost:5173"
 
-    # ChromaDB persistence directory
-    CHROMA_PERSIST_DIR: str = "./chroma_db"
-
-    # GitHub integration
-    GITHUB_TOKEN: Optional[str] = None
-
-    # Gmail integration — path to OAuth credentials JSON
-    GMAIL_CREDENTIALS_PATH: Optional[str] = None
-
-    model_config = {
-        "env_file": ".env",
-        "env_file_encoding": "utf-8",
-    }
+    class Config:
+        env_file = ".env"
 
 
 settings = Settings()
