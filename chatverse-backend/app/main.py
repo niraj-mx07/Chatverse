@@ -1,14 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from app.config import settings 
 from app.routers import pdf, youtube, github, gmail
 
-app = FastAPI(title="ChatVerse Backend")
+app = FastAPI(title="ChatVerse API")
 
 # CORS — allow the Vite dev server
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=settings.cors_origins.split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -22,5 +22,5 @@ app.include_router(gmail.router, prefix="/api/gmail", tags=["Gmail"])
 
 
 @app.get("/")
-async def root():
+async def health():
     return {"message": "ChatVerse Backend is running"}
