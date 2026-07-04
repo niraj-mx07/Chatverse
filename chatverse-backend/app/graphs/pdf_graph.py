@@ -1,21 +1,21 @@
-# TODO: implement PDF RAG graph (LangGraph)
-
-from typing import typeDict 
+from typing import TypedDict
 from langgraph.graph import StateGraph, END
 from app.core.llm import get_llm
 from app.core.vectorstore import get_vectorstore
 
+
 class PDFChatState(TypedDict):
     session_id: str
     question: str
-    context_docs: str
-    answer:str
+    context_docs: list
+    answer: str
+
 
 def retrieve_node(state: PDFChatState) -> PDFChatState:
     vs = get_vectorstore("pdf", state["session_id"])
     docs = vs.similarity_search(state["question"], k=4)
     state["context_docs"] = docs
-    return state    
+    return state
 
 
 def generate_node(state: PDFChatState) -> PDFChatState:
@@ -47,4 +47,4 @@ def build_pdf_graph():
     return graph.compile()
 
 
-pdf_graph = build_pdf_graph()    
+pdf_graph = build_pdf_graph()
