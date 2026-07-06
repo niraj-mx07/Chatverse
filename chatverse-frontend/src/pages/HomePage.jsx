@@ -10,8 +10,8 @@ import {
     X,
     RefreshCw,
     FileText,
-    Youtube,
-    Github,
+    Video,
+    Code,
     Mail,
     Clock,
 } from "lucide-react";
@@ -20,8 +20,8 @@ import "../styles/app.css";
 
 const MODE_CHIPS = [
     { label: "Chat with PDF", color: "#f43f5e", icon: FileText, isNew: true },
-    { label: "Chat with YouTube", color: "#f97316", icon: Youtube },
-    { label: "Chat with GitHub", color: "#a1a1aa", icon: Github },
+    { label: "Chat with YouTube", color: "#f97316", icon: Video },
+    { label: "Chat with GitHub", color: "#a1a1aa", icon: Code },
     { label: "Chat with Gmail", color: "#3b82f6", icon: Mail },
 ];
 
@@ -32,7 +32,7 @@ const RECOMMENDATIONS = [
         desc: "Upload a PDF and get a one-paragraph summary plus the three most-cited claims, each linked to its page.",
     },
     {
-        icon: Github,
+        icon: Code,
         title: "Explain a new repo before you clone it",
         desc: "Point ChatVerse at any public GitHub repo and ask where a feature is implemented before you dive in.",
     },
