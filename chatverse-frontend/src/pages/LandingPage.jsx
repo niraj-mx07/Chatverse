@@ -2,37 +2,6 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/landing.css";
 
-const DEMO_CONTENT = {
-    pdf: {
-        source: "📄 semester-report.pdf · 42 pages indexed",
-        q: "What does chapter 3 conclude about the model's accuracy?",
-        a: "Chapter 3 reports 91.4% accuracy on the held-out test set, with the authors attributing most gains to the added early-risk features introduced in section 3.2.",
-        tag: "p. 18 · chapter3.pdf",
-        color: "#f43f5e",
-    },
-    youtube: {
-        source: '▶ "Intro to LangGraph" · 24:10 transcript indexed',
-        q: "Where does he explain StateGraph nodes?",
-        a: "Around 6:40 he introduces StateGraph as a set of nodes sharing one TypedDict state, then walks through wiring retrieve → generate with add_edge.",
-        tag: "t=6:40",
-        color: "#f97316",
-    },
-    github: {
-        source: "⌥ chatverse-backend · 118 files indexed",
-        q: "Where is the Chroma collection created?",
-        a: 'In app/core/vectorstore.py — get_vectorstore(mode, session_id) opens a collection named "{mode}_{session_id}" using the shared embeddings client.',
-        tag: "core/vectorstore.py",
-        color: "#111827",
-    },
-    gmail: {
-        source: "✉ Inbox · 25 recent messages indexed",
-        q: "Did Aditya send the McDonald's assignment file?",
-        a: 'Yes — "Econ Assignment - McDonald\'s franchise" from Aditya Kailas Patil, received Tuesday, with the PDF attached.',
-        tag: "from:aditya · Tue",
-        color: "#3b82f6",
-    },
-};
-
 const FAQ_ITEMS = [
     {
         q: "Is my data used to index anything besides my own session?",
@@ -51,46 +20,6 @@ const FAQ_ITEMS = [
         a: "Only the indexed text chunks are stored for retrieval — nothing is executed, and you can clear a session at any time.",
     },
 ];
-
-function DemoTabs() {
-    const [mode, setMode] = useState("pdf");
-    const d = DEMO_CONTENT[mode];
-
-    return (
-        <div className="demo">
-            <div className="demo-tabs">
-                {Object.entries(DEMO_CONTENT).map(([key, val]) => (
-                    <div
-                        key={key}
-                        className={`demo-tab ${mode === key ? "active" : ""}`}
-                        onClick={() => setMode(key)}
-                    >
-                        <span className="chip" style={{ background: val.color }} />
-                        {key === "pdf" && "PDF"}
-                        {key === "youtube" && "YouTube"}
-                        {key === "github" && "GitHub"}
-                        {key === "gmail" && "Gmail"}
-                    </div>
-                ))}
-            </div>
-            <div className="demo-body">
-                <div className="demo-source-line">{d.source}</div>
-                <div className="demo-msg user">
-                    <div className="avatar user" />
-                    <div className="bubble">{d.q}</div>
-                </div>
-                <div className="demo-msg bot">
-                    <div className="avatar bot" />
-                    <div className="bubble">
-                        {d.a}
-                        <br />
-                        <span className="source-tag">{d.tag}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
 
 function FaqAccordion() {
     const [openIndex, setOpenIndex] = useState(0);
@@ -170,7 +99,9 @@ export default function LandingPage() {
                         </a>
                     </div>
 
-                    <DemoTabs />
+                    <div className="hero-screenshot">
+                        <img src="/hero-dashboard.png" alt="ChatVerse App Dashboard" />
+                    </div>
                 </div>
             </section>
 

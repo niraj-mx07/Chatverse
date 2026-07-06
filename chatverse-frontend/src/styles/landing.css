@@ -235,6 +235,21 @@
     padding: 12px 28px;
 }
 
+/* ---------- HERO SCREENSHOT ---------- */
+.landing .hero-screenshot {
+    max-width: 920px;
+    margin: 0 auto;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+}
+
+.landing .hero-screenshot img {
+    width: 100%;
+    display: block;
+}
+
 /* ---------- HERO DEMO ---------- */
 .landing .demo {
     max-width: 840px;
