@@ -26,18 +26,23 @@
 /* ---------- NAV ---------- */
 .landing header {
     position: sticky;
-    top: 0;
+    top: 24px;
     z-index: 50;
+    max-width: 1160px;
+    width: calc(100% - 32px);
+    margin: 0 auto;
     background: rgba(255, 255, 255, 0.75);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
 }
 
 .landing nav {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 68px;
+    height: 76px;
 }
 
 .landing .logo {
@@ -68,7 +73,7 @@
 .landing .nav-links {
     display: flex;
     gap: 32px;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
     color: var(--ink-soft);
 }
@@ -220,9 +225,14 @@
 
 .landing .hero-ctas {
     display: flex;
-    gap: 14px;
+    gap: 16px;
     justify-content: center;
     margin-bottom: 64px;
+}
+
+.landing .hero-ctas .btn {
+    font-size: 16px;
+    padding: 12px 28px;
 }
 
 /* ---------- HERO DEMO ---------- */
