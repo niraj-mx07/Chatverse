@@ -65,10 +65,10 @@ export default function LandingPage() {
                             <a href="#faq">FAQ</a>
                         </div>
                         <div className="nav-cta">
-                            <Link className="btn btn-ghost" to="/app">
+                            <Link className="btn btn-ghost" to="/signin">
                                 Sign in
                             </Link>
-                            <Link className="btn btn-primary" to="/app">
+                            <Link className="btn btn-primary" to="/signin">
                                 Get started
                             </Link>
                         </div>
@@ -91,7 +91,7 @@ export default function LandingPage() {
                         answer traced back to the exact line it came from.
                     </p>
                     <div className="hero-ctas">
-                        <Link className="btn btn-accent" to="/app">
+                        <Link className="btn btn-accent" to="/signin">
                             Start chatting free
                         </Link>
                         <a className="btn btn-ghost" href="#how">
