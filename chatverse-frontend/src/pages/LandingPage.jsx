@@ -154,9 +154,7 @@ export default function LandingPage() {
                         Gmail
                     </span>
                     <h1>
-                        One conversation.
-                        <br />
-                        <span className="grad">Every source you have.</span>
+                        One conversation. <span className="grad">Every source you have.</span>
                     </h1>
                     <p>
                         ChatVerse is a multi-mode RAG chat platform. Drop in a PDF, a

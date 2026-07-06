@@ -195,10 +195,11 @@
 }
 
 .landing .hero h1 {
-    font-size: clamp(36px, 6vw, 64px);
-    line-height: 1.08;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-size: clamp(40px, 8vw, 84px);
+    line-height: 1.1;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: -0.04em;
     margin: 0 0 20px;
 }
 
