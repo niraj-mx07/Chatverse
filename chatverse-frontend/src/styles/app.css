@@ -26,6 +26,70 @@
     flex-direction: column;
     padding: 16px 12px;
     overflow-y: auto;
+    transition: width 0.3s ease, padding 0.3s ease;
+}
+
+.app-shell.collapsed {
+    grid-template-columns: 72px 1fr;
+}
+
+.app-shell.collapsed .app-sidebar {
+    padding: 16px 8px;
+    align-items: center;
+}
+
+/* Hide text and elements when collapsed */
+.app-shell.collapsed .sb-brand,
+.app-shell.collapsed .sb-item span,
+.app-shell.collapsed .sb-mode-item span.mode-label,
+.app-shell.collapsed .sb-section-label,
+.app-shell.collapsed .sb-search-input,
+.app-shell.collapsed .sb-upgrade-text,
+.app-shell.collapsed .sb-upgrade>svg,
+.app-shell.collapsed .sb-nav button span {
+    display: none;
+}
+
+.app-shell.collapsed .sb-icons {
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+}
+
+.app-shell.collapsed .sb-top {
+    flex-direction: column;
+    padding: 4px 0 16px;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.app-shell.collapsed .sb-search {
+    justify-content: center;
+    padding: 9px;
+    width: 38px;
+}
+
+.app-shell.collapsed .sb-item {
+    justify-content: center;
+    padding: 9px;
+    width: 38px;
+    border-radius: 10px;
+}
+
+.app-shell.collapsed .sb-mode-item {
+    justify-content: center;
+    padding: 8px;
+    width: 38px;
+}
+
+.app-shell.collapsed .sb-mode-avatar {
+    margin: 0;
+}
+
+.app-shell.collapsed .sb-upgrade {
+    justify-content: center;
+    padding: 12px;
 }
 
 .sb-top {
@@ -81,16 +145,30 @@
     padding: 9px 12px;
     border-radius: 10px;
     color: var(--text-soft);
-    font-size: 13px;
     background: transparent;
     border: 1px solid transparent;
     margin-bottom: 4px;
     transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.sb-search:hover {
+.sb-search:hover,
+.sb-search:focus-within {
     background: var(--bg-hover);
     border-color: var(--border);
+}
+
+.sb-search-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 13px;
+    width: 100%;
+    font-family: inherit;
+}
+
+.sb-search-input::placeholder {
+    color: var(--text-soft);
 }
 
 .sb-nav {

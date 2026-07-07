@@ -78,18 +78,13 @@ function HomeContent({ message, setMessage, onModeSelect }) {
                 />
                 <div className="input-toolbar">
                     <div className="tool-left">
-                        <button className="pill-select">
-                            <InfinityIcon size={13} />
-                            Source
-                            <ChevronDown size={13} />
-                        </button>
                         <button className="icon-btn">
                             <Plus size={14} />
                         </button>
                     </div>
                     <div className="tool-right">
                         <button className="pill-select">
-                            GPT-4o mini
+                            Gemini
                             <ChevronDown size={13} />
                         </button>
                         <button className="send-btn">
@@ -302,18 +297,13 @@ function ModeChatContent({ mode, message, setMessage }) {
                 />
                 <div className="input-toolbar">
                     <div className="tool-left">
-                        <button className="pill-select" style={{ borderColor: config.color }}>
-                            <Icon size={13} />
-                            {mode}
-                            <ChevronDown size={13} />
-                        </button>
                         <button className="icon-btn">
                             <Plus size={14} />
                         </button>
                     </div>
                     <div className="tool-right">
                         <button className="pill-select">
-                            GPT-4o mini
+                            Gemini
                             <ChevronDown size={13} />
                         </button>
                         <button className="send-btn">
@@ -355,6 +345,7 @@ export default function HomePage() {
     const [message, setMessage] = useState("");
     const [activeSection, setActiveSection] = useState("home");
     const [activeMode, setActiveMode] = useState(null);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
     const handleSectionChange = (section) => {
         setActiveSection(section);
@@ -382,11 +373,13 @@ export default function HomePage() {
     };
 
     return (
-        <div className="app-shell">
+        <div className={`app-shell ${isSidebarCollapsed ? "collapsed" : ""}`}>
             <Sidebar
                 activeSection={activeSection}
                 onSectionChange={handleSectionChange}
                 onModeSelect={handleModeSelect}
+                isCollapsed={isSidebarCollapsed}
+                onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             />
             <main className="app-main">
                 <div className="app-main-inner">

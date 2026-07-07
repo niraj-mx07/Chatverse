@@ -38,16 +38,22 @@ const NAV_BOTTOM = [
     { id: "saved", label: "Saved answers", icon: Bookmark },
 ];
 
-export default function Sidebar({ activeSection, onSectionChange, onModeSelect }) {
+export default function Sidebar({
+    activeSection,
+    onSectionChange,
+    onModeSelect,
+    isCollapsed,
+    onToggleCollapse
+}) {
     return (
         <aside className="app-sidebar">
             <div className="sb-top">
                 <div className="sb-brand">
                     <span className="sb-mark" />
-                    ChatVerse
+                    <span>ChatVerse</span>
                 </div>
                 <div className="sb-icons">
-                    <button className="sb-icon-btn" title="Collapse sidebar">
+                    <button className="sb-icon-btn" title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"} onClick={onToggleCollapse}>
                         <PanelLeft size={16} />
                     </button>
                     <button className="sb-icon-btn" title="Notifications">
@@ -56,10 +62,10 @@ export default function Sidebar({ activeSection, onSectionChange, onModeSelect }
                 </div>
             </div>
 
-            <button className="sb-search">
+            <div className="sb-search">
                 <Search size={15} />
-                Search
-            </button>
+                <input type="text" placeholder="Search" className="sb-search-input" />
+            </div>
 
             <nav className="sb-nav" style={{ marginTop: 8 }}>
                 {NAV_TOP.map((item) => {
@@ -71,14 +77,14 @@ export default function Sidebar({ activeSection, onSectionChange, onModeSelect }
                             onClick={() => onSectionChange(item.id)}
                         >
                             <Icon size={16} />
-                            {item.label}
+                            <span>{item.label}</span>
                         </button>
                     );
                 })}
             </nav>
 
             <div className="sb-section-label">
-                Modes
+                <span>Modes</span>
                 <ChevronDown size={13} />
             </div>
             {MODES.map((m) => {
@@ -94,7 +100,7 @@ export default function Sidebar({ activeSection, onSectionChange, onModeSelect }
                             className="sb-mode-avatar"
                             style={{ background: m.color }}
                         />
-                        {m.label}
+                        <span className="mode-label">{m.label}</span>
                     </div>
                 );
             })}
@@ -104,7 +110,7 @@ export default function Sidebar({ activeSection, onSectionChange, onModeSelect }
                 onClick={() => onSectionChange("home")}
             >
                 <Plus size={16} />
-                New source
+                <span>New source</span>
             </button>
 
             <div className="sb-divider" />
@@ -119,7 +125,7 @@ export default function Sidebar({ activeSection, onSectionChange, onModeSelect }
                             onClick={() => onSectionChange(item.id)}
                         >
                             <Icon size={16} />
-                            {item.label}
+                            <span>{item.label}</span>
                         </button>
                     );
                 })}
