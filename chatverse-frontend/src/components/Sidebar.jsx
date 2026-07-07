@@ -13,14 +13,32 @@ import {
     ArrowRight,
     HelpCircle,
     Plus,
+    Video,
+    Code,
+    Mail,
 } from "lucide-react";
 
 const MODES = [
-    { label: "PDF Chat", color: "#f43f5e" },
-    { label: "YouTube Chat", color: "#f97316" },
+    { label: "PDF Chat", color: "#f43f5e", icon: FileText },
+    { label: "YouTube Chat", color: "#f97316", icon: Video },
+    { label: "GitHub Chat", color: "#a1a1aa", icon: Code },
+    { label: "Gmail Chat", color: "#3b82f6", icon: Mail },
 ];
 
-export default function Sidebar() {
+const NAV_TOP = [
+    { id: "home", label: "Home", icon: Home },
+    { id: "sessions", label: "Sessions", icon: ListChecks },
+    { id: "sources", label: "Sources", icon: FileText },
+];
+
+const NAV_BOTTOM = [
+    { id: "templates", label: "Templates", icon: Sparkles },
+    { id: "community", label: "Community", icon: Users },
+    { id: "docs", label: "Docs", icon: BookOpen },
+    { id: "saved", label: "Saved answers", icon: Bookmark },
+];
+
+export default function Sidebar({ activeSection, onSectionChange, onModeSelect }) {
     return (
         <aside className="app-sidebar">
             <div className="sb-top">
@@ -44,34 +62,47 @@ export default function Sidebar() {
             </button>
 
             <nav className="sb-nav" style={{ marginTop: 8 }}>
-                <button className="sb-item active">
-                    <Home size={16} />
-                    Home
-                </button>
-                <button className="sb-item">
-                    <ListChecks size={16} />
-                    Sessions
-                </button>
-                <button className="sb-item">
-                    <FileText size={16} />
-                    Sources
-                </button>
+                {NAV_TOP.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                        <button
+                            key={item.id}
+                            className={`sb-item ${activeSection === item.id ? "active" : ""}`}
+                            onClick={() => onSectionChange(item.id)}
+                        >
+                            <Icon size={16} />
+                            {item.label}
+                        </button>
+                    );
+                })}
             </nav>
 
             <div className="sb-section-label">
                 Modes
                 <ChevronDown size={13} />
             </div>
-            {MODES.map((m) => (
-                <div className="sb-mode-item" key={m.label}>
-                    <span
-                        className="sb-mode-avatar"
-                        style={{ background: m.color }}
-                    />
-                    {m.label}
-                </div>
-            ))}
-            <button className="sb-item" style={{ color: "var(--text-faint)" }}>
+            {MODES.map((m) => {
+                const Icon = m.icon;
+                return (
+                    <div
+                        className="sb-mode-item"
+                        key={m.label}
+                        onClick={() => onModeSelect(m.label)}
+                        style={{ cursor: "pointer" }}
+                    >
+                        <span
+                            className="sb-mode-avatar"
+                            style={{ background: m.color }}
+                        />
+                        {m.label}
+                    </div>
+                );
+            })}
+            <button
+                className="sb-item"
+                style={{ color: "var(--text-faint)" }}
+                onClick={() => onSectionChange("home")}
+            >
                 <Plus size={16} />
                 New source
             </button>
@@ -79,22 +110,19 @@ export default function Sidebar() {
             <div className="sb-divider" />
 
             <nav className="sb-nav">
-                <button className="sb-item">
-                    <Sparkles size={16} />
-                    Templates
-                </button>
-                <button className="sb-item">
-                    <Users size={16} />
-                    Community
-                </button>
-                <button className="sb-item">
-                    <BookOpen size={16} />
-                    Docs
-                </button>
-                <button className="sb-item">
-                    <Bookmark size={16} />
-                    Saved answers
-                </button>
+                {NAV_BOTTOM.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                        <button
+                            key={item.id}
+                            className={`sb-item ${activeSection === item.id ? "active" : ""}`}
+                            onClick={() => onSectionChange(item.id)}
+                        >
+                            <Icon size={16} />
+                            {item.label}
+                        </button>
+                    );
+                })}
             </nav>
 
             <div className="sb-spacer" />
