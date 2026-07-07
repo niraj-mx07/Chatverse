@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { API_BASE_URL } from "../config";
 import {
     Infinity as InfinityIcon,
     ChevronDown,
@@ -266,27 +267,81 @@ function SavedContent() {
     );
 }
 
-function ModeChatContent({ mode, message, setMessage }) {
+function ModeChatContent({ mode, message, setMessage, sessionId, history, isProcessing, onIngest, onChat }) {
+    const fileInputRef = useRef(null);
+
     const modeConfig = {
-        "PDF Chat": { color: "#f43f5e", icon: FileText, placeholder: "Upload a PDF or ask about an indexed document…", hint: "Drop a PDF file here or paste text to begin indexing." },
-        "YouTube Chat": { color: "#f97316", icon: Video, placeholder: "Paste a YouTube link or ask about a video…", hint: "Paste a YouTube URL to index its transcript and start chatting." },
-        "GitHub Chat": { color: "#a1a1aa", icon: Code, placeholder: "Enter a GitHub repo URL or ask about code…", hint: "Paste a GitHub repository URL to index the codebase." },
-        "Gmail Chat": { color: "#3b82f6", icon: Mail, placeholder: "Ask about your emails or search for a thread…", hint: "Connect your Gmail to index and search your inbox." },
+        "PDF Chat": { apiMode: "pdf", color: "#f43f5e", icon: FileText, placeholder: sessionId ? "Ask a question about the PDF..." : "Upload a PDF (using +)", hint: sessionId ? "PDF indexed. Ask a question." : "Drop a PDF file here or use + to begin indexing." },
+        "YouTube Chat": { apiMode: "youtube", color: "#f97316", icon: Video, placeholder: sessionId ? "Ask a question..." : "Paste a YouTube link...", hint: sessionId ? "Video indexed. Ask a question." : "Paste a YouTube URL to index its transcript." },
+        "GitHub Chat": { apiMode: "github", color: "#a1a1aa", icon: Code, placeholder: sessionId ? "Ask a question..." : "Enter a GitHub repo URL (e.g. owner/repo)...", hint: sessionId ? "Repo indexed. Ask a question." : "Paste a GitHub repository URL to index the codebase." },
+        "Gmail Chat": { apiMode: "gmail", color: "#3b82f6", icon: Mail, placeholder: sessionId ? "Ask a question..." : "Enter a Gmail search query (e.g. from:me)...", hint: sessionId ? "Emails indexed. Ask a question." : "Enter a query to index and search your inbox." },
     };
 
     const config = modeConfig[mode] || modeConfig["PDF Chat"];
     const Icon = config.icon;
 
+    const handleSend = () => {
+        if (!message.trim() || isProcessing) return;
+        if (!sessionId && mode !== "PDF Chat") {
+            onIngest(config.apiMode, message);
+        } else if (sessionId) {
+            onChat(config.apiMode, message);
+        }
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter" && !e.ctrlKey && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            onIngest("pdf", file);
+        }
+    };
+
     return (
         <>
-            <div className="greet-head">
-                <span className="greet-avatar" style={{ background: config.color }} />
-                <span className="greet-name">{mode}</span>
-            </div>
-            <div className="greet-lines">
-                <p>{config.hint}</p>
-                <p className="soft">Ask anything — every answer will be traced back to its source.</p>
-            </div>
+            {(!history || history.length === 0) && (
+                <>
+                    <div className="greet-head">
+                        <span className="greet-avatar" style={{ background: config.color }} />
+                        <span className="greet-name">{mode}</span>
+                    </div>
+                    <div className="greet-lines">
+                        <p>{config.hint}</p>
+                        <p className="soft">Ask anything — every answer will be traced back to its source.</p>
+                    </div>
+                </>
+            )}
+
+            {history && history.length > 0 && (
+                <div className="chat-history">
+                    {history.map((turn, i) => (
+                        <div key={i} className={`chat-message ${turn.role}`}>
+                            <div className="msg-bubble">{turn.content}</div>
+                            {turn.sources && turn.sources.length > 0 && turn.role === "assistant" && (
+                                <div className="chat-sources">
+                                    {turn.sources.map((src, j) => (
+                                        <span key={j} className="source-badge">
+                                            <FileText size={10} />
+                                            Citation {j + 1}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                    {isProcessing && (
+                        <div className="chat-message assistant">
+                            <div className="msg-bubble" style={{ color: "var(--text-soft)" }}>Processing...</div>
+                        </div>
+                    )}
+                </div>
+            )}
 
             <div className="input-card">
                 <textarea
@@ -294,19 +349,37 @@ function ModeChatContent({ mode, message, setMessage }) {
                     placeholder={config.placeholder}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    disabled={isProcessing || (mode === "PDF Chat" && !sessionId && isProcessing)}
                 />
                 <div className="input-toolbar">
                     <div className="tool-left">
-                        <button className="icon-btn">
-                            <Plus size={14} />
-                        </button>
+                        {mode === "PDF Chat" && !sessionId && (
+                            <>
+                                <input
+                                    type="file"
+                                    accept="application/pdf"
+                                    ref={fileInputRef}
+                                    style={{ display: "none" }}
+                                    onChange={handleFileChange}
+                                />
+                                <button className="icon-btn" onClick={() => fileInputRef.current.click()} disabled={isProcessing}>
+                                    <Plus size={14} />
+                                </button>
+                            </>
+                        )}
+                        {(mode !== "PDF Chat" || sessionId) && (
+                            <button className="icon-btn">
+                                <Plus size={14} />
+                            </button>
+                        )}
                     </div>
                     <div className="tool-right">
                         <button className="pill-select">
                             Gemini
                             <ChevronDown size={13} />
                         </button>
-                        <button className="send-btn">
+                        <button className="send-btn" onClick={handleSend} disabled={isProcessing || (!message.trim() && mode !== "PDF Chat")}>
                             <ArrowUp size={16} />
                         </button>
                     </div>
@@ -347,6 +420,11 @@ export default function HomePage() {
     const [activeMode, setActiveMode] = useState(null);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
+    // Backend state
+    const [sessionIds, setSessionIds] = useState({});
+    const [chatHistories, setChatHistories] = useState({});
+    const [isProcessing, setIsProcessing] = useState(false);
+
     const handleSectionChange = (section) => {
         setActiveSection(section);
         setActiveMode(null);
@@ -355,11 +433,101 @@ export default function HomePage() {
     const handleModeSelect = (mode) => {
         setActiveMode(mode);
         setActiveSection(null);
+        setMessage("");
+    };
+
+    const handleIngest = async (apiMode, payload) => {
+        setIsProcessing(true);
+        setMessage(""); // Clear input
+        try {
+            let res;
+            if (apiMode === "pdf") {
+                const formData = new FormData();
+                formData.append("file", payload);
+                res = await fetch(`${API_BASE_URL}/${apiMode}/ingest`, {
+                    method: "POST",
+                    body: formData,
+                });
+            } else {
+                let body = {};
+                if (apiMode === "youtube") body = { url: payload };
+                else if (apiMode === "github") body = { repo_url: payload };
+                else if (apiMode === "gmail") body = { query: payload, max_results: 25 };
+
+                res = await fetch(`${API_BASE_URL}/${apiMode}/ingest`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body),
+                });
+            }
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || "Ingest failed");
+
+            // Save sessionId
+            setSessionIds((prev) => ({ ...prev, [activeMode]: data.session_id }));
+
+            // Re-fetch initial history or set empty
+            setChatHistories((prev) => ({ ...prev, [activeMode]: [] }));
+
+        } catch (err) {
+            console.error(err);
+            alert("Error during ingestion: " + err.message);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const handleChat = async (apiMode, userInput) => {
+        const sessionId = sessionIds[activeMode];
+        if (!sessionId) return;
+
+        setIsProcessing(true);
+        setMessage(""); // Clear input early
+
+        // Optimistically add user message
+        const newHistory = [...(chatHistories[activeMode] || []), { role: "user", content: userInput }];
+        setChatHistories((prev) => ({ ...prev, [activeMode]: newHistory }));
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/${apiMode}/chat`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ session_id: sessionId, message: userInput }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || "Chat failed");
+
+            setChatHistories((prev) => ({
+                ...prev,
+                [activeMode]: [
+                    ...(prev[activeMode] || []),
+                    { role: "assistant", content: data.answer, sources: data.sources }
+                ]
+            }));
+
+        } catch (err) {
+            console.error(err);
+            alert("Error during chat: " + err.message);
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     const renderContent = () => {
         if (activeMode) {
-            return <ModeChatContent mode={activeMode} message={message} setMessage={setMessage} />;
+            return (
+                <ModeChatContent
+                    mode={activeMode}
+                    message={message}
+                    setMessage={setMessage}
+                    sessionId={sessionIds[activeMode]}
+                    history={chatHistories[activeMode]}
+                    isProcessing={isProcessing}
+                    onIngest={handleIngest}
+                    onChat={handleChat}
+                />
+            );
         }
         switch (activeSection) {
             case "sessions": return <SessionsContent />;
