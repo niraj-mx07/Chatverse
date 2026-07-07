@@ -40,7 +40,8 @@
     background: var(--bg-soft);
 }
 
-.landing.dark .btn-ghost {
+.landing.dark .btn-ghost,
+.landing.dark .stack-chip {
     color: #0b0e14;
 }
 
