@@ -1,30 +1,51 @@
-# TODO: implement Gmail RAG graph (LangGraph)
-
-import os
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from app.config import settings
-
-SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
-TOKEN_PATH = "token.json"
+from typing import TypedDict
+from langgraph.graph import StateGraph, END
+from app.core.llm import get_llm
+from app.core.vectorstore import get_vectorstore
 
 
-def get_gmail_credentials() -> Credentials:
-    creds = None
-    if os.path.exists(TOKEN_PATH):
-        creds = Credentials.from_authorized_user_file(TOKEN_PATH, SCOPES)
+class GmailChatState(TypedDict):
+    session_id: str
+    question: str
+    context_docs: list
+    answer: str
 
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                settings.gmail_credentials_path, SCOPES
-            )
-            creds = flow.run_local_server(port=0)  # opens browser once
 
-        with open(TOKEN_PATH, "w") as token_file:
-            token_file.write(creds.to_json())
+def retrieve_node(state: GmailChatState) -> GmailChatState:
+    vs = get_vectorstore("gmail", state["session_id"])
+    docs = vs.similarity_search(state["question"], k=4)
+    state["context_docs"] = docs
+    return state
 
-    return creds
+
+def generate_node(state: GmailChatState) -> GmailChatState:
+    llm = get_llm()
+    context_text = "\n\n---\n\n".join(d.page_content for d in state["context_docs"])
+
+    prompt = f"""You are answering questions about the user's emails using
+only the context below. Reference the sender or subject when relevant. If
+the answer isn't in the context, say you don't know.
+
+Context:
+{context_text}
+
+Question: {state["question"]}
+
+Answer:"""
+
+    response = llm.invoke(prompt)
+    state["answer"] = response.content
+    return state
+
+
+def build_gmail_graph():
+    graph = StateGraph(GmailChatState)
+    graph.add_node("retrieve", retrieve_node)
+    graph.add_node("generate", generate_node)
+    graph.set_entry_point("retrieve")
+    graph.add_edge("retrieve", "generate")
+    graph.add_edge("generate", END)
+    return graph.compile()
+
+
+gmail_graph = build_gmail_graph()
