@@ -1,17 +1,17 @@
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from app.config import settings
 
 
-def get_llm(temperature: float = 0.2) -> ChatOpenAI:
-    return ChatOpenAI(
-        model="gpt-4o-mini",
+def get_llm(temperature: float = 0.2) -> ChatGoogleGenerativeAI:
+    return ChatGoogleGenerativeAI(
+        model="gemini-2.5-flash",
         temperature=temperature,
-        api_key=settings.openai_api_key,
+        google_api_key=settings.google_api_key,
     )
 
 
-def get_embeddings() -> OpenAIEmbeddings:
-    return OpenAIEmbeddings(
-        model="text-embedding-3-small",
-        api_key=settings.openai_api_key,
+def get_embeddings() -> GoogleGenerativeAIEmbeddings:
+    return GoogleGenerativeAIEmbeddings(
+        model="models/text-embedding-004",
+        google_api_key=settings.google_api_key,
     )
