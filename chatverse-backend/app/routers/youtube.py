@@ -54,11 +54,15 @@ async def ingest_youtube(req: YouTubeIngestRequest):
     video_id = extract_video_id(req.url)
 
     try:
-        transcript = YouTubeTranscriptApi.get_transcript(video_id)
+        transcript = YouTubeTranscriptApi().fetch(video_id)
     except Exception as e:
         raise HTTPException(400, f"Could not fetch transcript: {e}")
 
-    chunks = chunk_transcript(transcript)
+    segments = [
+        {"text": seg.text, "start": seg.start}
+        for seg in transcript
+    ]
+    chunks = chunk_transcript(segments)
 
     session_id = str(uuid.uuid4())
     vs = get_vectorstore("youtube", session_id)

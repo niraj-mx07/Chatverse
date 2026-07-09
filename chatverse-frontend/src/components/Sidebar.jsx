@@ -18,12 +18,7 @@ import {
     Mail,
 } from "lucide-react";
 
-const MODES = [
-    { label: "PDF Chat", color: "#f43f5e", icon: FileText },
-    { label: "YouTube Chat", color: "#f97316", icon: Video },
-    { label: "GitHub Chat", color: "#a1a1aa", icon: Code },
-    { label: "Gmail Chat", color: "#3b82f6", icon: Mail },
-];
+import { MODES } from "../modes";
 
 const NAV_TOP = [
     { id: "home", label: "Home", icon: Home },

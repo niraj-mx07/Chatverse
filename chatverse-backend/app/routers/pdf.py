@@ -20,7 +20,9 @@ _history: dict[str, list[dict]] = {}
 
 @router.post("/ingest", response_model=IngestResponse)
 async def ingest_pdf(file: UploadFile = File(...)):
-    if file.content_type != "application/pdf":
+    if file.content_type not in ("application/pdf", "application/octet-stream"):
+        raise HTTPException(400, "Only PDF files are accepted")
+    if not (file.filename or "").lower().endswith(".pdf"):
         raise HTTPException(400, "Only PDF files are accepted")
 
     session_id = str(uuid.uuid4())

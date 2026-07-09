@@ -1,5 +1,6 @@
-import { useState, useRef } from "react";
-import { API_BASE_URL } from "../config";
+import { useState, useRef, useEffect } from "react";
+import { MODES, MODE_BY_LABEL } from "../modes";
+import { ingestSource, sendChat, checkHealth } from "../api";
 import {
     Infinity as InfinityIcon,
     ChevronDown,
@@ -26,12 +27,7 @@ import {
 import Sidebar from "../components/Sidebar.jsx";
 import "../styles/app.css";
 
-const MODE_CHIPS = [
-    { label: "Chat with PDF", color: "#f43f5e", icon: FileText, isNew: true },
-    { label: "Chat with YouTube", color: "#f97316", icon: Video },
-    { label: "Chat with GitHub", color: "#a1a1aa", icon: Code },
-    { label: "Chat with Gmail", color: "#3b82f6", icon: Mail },
-];
+const MODE_CHIPS = MODES;
 
 const RECOMMENDATIONS = [
     {
@@ -270,14 +266,18 @@ function SavedContent() {
 function ModeChatContent({ mode, message, setMessage, sessionId, history, isProcessing, onIngest, onChat }) {
     const fileInputRef = useRef(null);
 
-    const modeConfig = {
-        "PDF Chat": { apiMode: "pdf", color: "#f43f5e", icon: FileText, placeholder: sessionId ? "Ask a question about the PDF..." : "Upload a PDF (using +)", hint: sessionId ? "PDF indexed. Ask a question." : "Drop a PDF file here or use + to begin indexing." },
-        "YouTube Chat": { apiMode: "youtube", color: "#f97316", icon: Video, placeholder: sessionId ? "Ask a question..." : "Paste a YouTube link...", hint: sessionId ? "Video indexed. Ask a question." : "Paste a YouTube URL to index its transcript." },
-        "GitHub Chat": { apiMode: "github", color: "#a1a1aa", icon: Code, placeholder: sessionId ? "Ask a question..." : "Enter a GitHub repo URL (e.g. owner/repo)...", hint: sessionId ? "Repo indexed. Ask a question." : "Paste a GitHub repository URL to index the codebase." },
-        "Gmail Chat": { apiMode: "gmail", color: "#3b82f6", icon: Mail, placeholder: sessionId ? "Ask a question..." : "Enter a Gmail search query (e.g. from:me)...", hint: sessionId ? "Emails indexed. Ask a question." : "Enter a query to index and search your inbox." },
+    const modeMeta = MODE_BY_LABEL[mode];
+    const config = {
+        apiMode: modeMeta?.id || "pdf",
+        color: modeMeta?.color || "#f43f5e",
+        icon: modeMeta?.icon || FileText,
+        placeholder: sessionId
+            ? (mode === "PDF Chat" ? "Ask a question about the PDF..." : "Ask a question...")
+            : (mode === "PDF Chat" ? "Upload a PDF (using +)" : mode === "YouTube Chat" ? "Paste a YouTube link..." : mode === "GitHub Chat" ? "Enter a GitHub repo URL (e.g. owner/repo)..." : "Enter a Gmail search query (e.g. from:me)..."),
+        hint: sessionId
+            ? (mode === "PDF Chat" ? "PDF indexed. Ask a question." : mode === "YouTube Chat" ? "Video indexed. Ask a question." : mode === "GitHub Chat" ? "Repo indexed. Ask a question." : "Emails indexed. Ask a question.")
+            : (mode === "PDF Chat" ? "Drop a PDF file here or use + to begin indexing." : mode === "YouTube Chat" ? "Paste a YouTube URL to index its transcript." : mode === "GitHub Chat" ? "Paste a GitHub repository URL to index the codebase." : "Enter a query to index and search your inbox."),
     };
-
-    const config = modeConfig[mode] || modeConfig["PDF Chat"];
     const Icon = config.icon;
 
     const handleSend = () => {
@@ -424,6 +424,11 @@ export default function HomePage() {
     const [sessionIds, setSessionIds] = useState({});
     const [chatHistories, setChatHistories] = useState({});
     const [isProcessing, setIsProcessing] = useState(false);
+    const [backendOnline, setBackendOnline] = useState(null);
+
+    useEffect(() => {
+        checkHealth().then(setBackendOnline).catch(() => setBackendOnline(false));
+    }, []);
 
     const handleSectionChange = (section) => {
         setActiveSection(section);
@@ -438,38 +443,11 @@ export default function HomePage() {
 
     const handleIngest = async (apiMode, payload) => {
         setIsProcessing(true);
-        setMessage(""); // Clear input
+        setMessage("");
         try {
-            let res;
-            if (apiMode === "pdf") {
-                const formData = new FormData();
-                formData.append("file", payload);
-                res = await fetch(`${API_BASE_URL}/${apiMode}/ingest`, {
-                    method: "POST",
-                    body: formData,
-                });
-            } else {
-                let body = {};
-                if (apiMode === "youtube") body = { url: payload };
-                else if (apiMode === "github") body = { repo_url: payload };
-                else if (apiMode === "gmail") body = { query: payload, max_results: 25 };
-
-                res = await fetch(`${API_BASE_URL}/${apiMode}/ingest`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(body),
-                });
-            }
-
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.detail || "Ingest failed");
-
-            // Save sessionId
+            const data = await ingestSource(apiMode, payload);
             setSessionIds((prev) => ({ ...prev, [activeMode]: data.session_id }));
-
-            // Re-fetch initial history or set empty
             setChatHistories((prev) => ({ ...prev, [activeMode]: [] }));
-
         } catch (err) {
             console.error(err);
             alert("Error during ingestion: " + err.message);
@@ -483,32 +461,29 @@ export default function HomePage() {
         if (!sessionId) return;
 
         setIsProcessing(true);
-        setMessage(""); // Clear input early
+        setMessage("");
 
-        // Optimistically add user message
         const newHistory = [...(chatHistories[activeMode] || []), { role: "user", content: userInput }];
         setChatHistories((prev) => ({ ...prev, [activeMode]: newHistory }));
 
         try {
-            const res = await fetch(`${API_BASE_URL}/${apiMode}/chat`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ session_id: sessionId, message: userInput }),
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.detail || "Chat failed");
-
+            const data = await sendChat(apiMode, sessionId, userInput);
             setChatHistories((prev) => ({
                 ...prev,
                 [activeMode]: [
                     ...(prev[activeMode] || []),
-                    { role: "assistant", content: data.answer, sources: data.sources }
-                ]
+                    { role: "assistant", content: data.answer, sources: data.sources },
+                ],
             }));
-
         } catch (err) {
             console.error(err);
-            alert("Error during chat: " + err.message);
+            setChatHistories((prev) => ({
+                ...prev,
+                [activeMode]: [
+                    ...(prev[activeMode] || []),
+                    { role: "assistant", content: `Error: ${err.message}` },
+                ],
+            }));
         } finally {
             setIsProcessing(false);
         }
@@ -550,6 +525,11 @@ export default function HomePage() {
                 onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             />
             <main className="app-main">
+                {backendOnline === false && (
+                    <div style={{ padding: "8px 16px", background: "#fef2f2", color: "#b91c1c", fontSize: 13, textAlign: "center" }}>
+                        Backend offline — start it with: cd chatverse-backend && uvicorn app.main:app --reload --port 8000
+                    </div>
+                )}
                 <div className="app-main-inner">
                     {renderContent()}
                 </div>
