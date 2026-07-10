@@ -531,13 +531,6 @@ A: In-memory per router process for now. Restarting the backend clears it — sw
 
 ---
 
-## 👤 Author
-
-**Neeraj**
-- Department of AI & ML, R. C. Patel Institute of Technology
-
----
-
 ## 📄 License
 
 This project is licensed under the MIT License.
