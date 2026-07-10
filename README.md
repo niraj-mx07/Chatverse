@@ -480,28 +480,3 @@ npm run build   # outputs to dist/
 
 ---
 
-## ❓ FAQ
-
-**Q: Is my data used to index anything besides my own session?**
-A: No. Every upload lives in its own isolated Chroma collection, scoped to your session and mode.
-
-**Q: Can an answer be wrong?**
-A: Answers are grounded only in retrieved passages, and every reply includes the exact source chunks used — check the source panel if something looks off.
-
-**Q: Do I need Gmail connected to use the other modes?**
-A: No. Each mode is fully independent.
-
-**Q: Can I use a different LLM provider?**
-A: Yes — edit `app/core/llm.py` only; every graph and router imports from there.
-
-**Q: How is conversation history stored?**
-A: In-memory per router process for now. Restarting the backend clears it — swap in Redis/SQLite for persistence.
-
----
-
-## 📝 Documentation References
-
-- `01_ARCHITECTURE_AND_ANTIGRAVITY_PROMPTS.md` — architecture + Antigravity scaffolding prompts
-- `02_BACKEND_CORE_AND_PDF_MODE.md` — FastAPI core + PDF mode, full code
-- `03_YOUTUBE_GITHUB_GMAIL_MODES.md` — remaining three modes
-- `04_FRONTEND_REACT.md` — React frontend structure and wiring
