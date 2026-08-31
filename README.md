@@ -12,7 +12,7 @@
 
 Every mode shares the same underlying pattern: ingest a source, chunk and embed it into an isolated vector collection, then retrieve and generate answers through a LangGraph pipeline. Only the ingestion step changes per source — everything else is identical, which keeps the system small and easy to reason about instead of four separate apps bolted together.
 
----
+----
 
 ## 🎯 Key Features
 
